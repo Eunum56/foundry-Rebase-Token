@@ -10,7 +10,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
 contract RebaseTokenTest is Test {
     RebaseToken rebaseToken;
     Vault vault;
@@ -35,7 +34,7 @@ contract RebaseTokenTest is Test {
         require(success);
     }
 
-        // DEPOSIT TESTS
+    // DEPOSIT TESTS
     function testDepositLinear(uint256 amount) public {
         amount = bound(amount, 1e5, type(uint96).max);
         // 1. deposit
@@ -105,7 +104,6 @@ contract RebaseTokenTest is Test {
         assertGt(userETHBalance, depositAmount);
     }
 
-
     // TRANSFER TESTS
     function testTransfer(uint256 amount, uint256 amountToSend) public {
         amount = bound(amount, 1e10, type(uint96).max);
@@ -140,7 +138,6 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.getUserInterestRate(user), 5e10);
         assertEq(rebaseToken.getUserInterestRate(user2), 5e10);
     }
-
 
     // TRANSFER FROM TESTS
     function testTransferFrom(uint256 amount, uint256 amountToSend) public {
@@ -181,13 +178,11 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.getUserInterestRate(user2), 5e10);
     }
 
-
     function testOnlyOwnerCanSetInterestRate(uint256 newInterestRate) public {
         vm.prank(user);
         vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
         rebaseToken.setInterestRate(newInterestRate);
     }
-
 
     function testPrincipleBalance(uint256 amount) public {
         amount = bound(amount, 1e5, type(uint96).max);
@@ -200,7 +195,6 @@ contract RebaseTokenTest is Test {
         vm.warp(block.timestamp + 1 hours);
         assertEq(rebaseToken.getPrincipleBalance(user), amount);
     }
-
 
     function testInterestRateCanOnlyDecrease(uint256 newInterestRate) public {
         uint256 initialInterestRate = rebaseToken.getInterestRate();

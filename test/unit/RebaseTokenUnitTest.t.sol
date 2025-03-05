@@ -42,7 +42,6 @@ contract RebaseTokenTest is Test {
         require(success);
     }
 
-
     // REDEEM TESTS
     function testRedeemRevertsIfAmountIsZero() public {
         vm.prank(owner);
@@ -84,7 +83,6 @@ contract RebaseTokenTest is Test {
         vault.redeem(1e10);
     }
 
-
     // TRANSFER TESTS
     function testTransferUin256MaxAmount() public {
         // 1. Deposit
@@ -101,7 +99,6 @@ contract RebaseTokenTest is Test {
 
         assertEq(rebaseToken.balanceOf(user2), userBalance);
     }
-
 
     // TRANSFER FROM TESTS
     function testTransferFromUint256MaxAmount() public {
@@ -124,8 +121,6 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.balanceOf(user2), userBalance);
     }
 
-
-
     function testOnlyOwnerCanCallMintAndBurn() public {
         vm.prank(user);
         vm.expectPartialRevert(IAccessControl.AccessControlUnauthorizedAccount.selector);
@@ -136,13 +131,9 @@ contract RebaseTokenTest is Test {
         rebaseToken.burn(user, 100);
     }
 
-
-
     function testGetRebaseTokenAddress() public view {
         assertEq(vault.getRebaseTokenAddress(), address(rebaseToken));
     }
-
-
 
     function testUserLastTimeUpdatedTimestamp() public {
         // 1. Deposit to set user timestamp
