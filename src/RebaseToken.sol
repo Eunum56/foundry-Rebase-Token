@@ -38,7 +38,8 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
     error RebaseToken__InterestRateCanOnlyDecrease(uint256 oldInterestRate, uint256 newInterestRate);
 
     // STATE VARIABLES
-    uint256 private s_interestRate = 5e10; // Global interest rate per second, scaled (for example, 5e10 means 5 * 10^10 per second)
+    uint256 private s_interestRate = (5 * PRECISION_FACTOR) / 1e8; // 10^-8 == 1 / 10^8
+        // Global interest rate per second, scaled (for example, 5e10 means 5 * 10^10 per second)
 
     bytes32 private constant MINT_AND_BURN_ROLE = keccak256("MINT_AND_BURN_ROLE");
 
@@ -65,7 +66,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
         // The require statement checks that newInterestRate is greater than the current rate.
         // This might seem counterintuitive, but here "interest rate" is used in the math such that a higher number results in lower effective yield.
         require(
-            newInterestRate > s_interestRate, RebaseToken__InterestRateCanOnlyDecrease(s_interestRate, newInterestRate)
+            newInterestRate < s_interestRate, RebaseToken__InterestRateCanOnlyDecrease(s_interestRate, newInterestRate)
         );
         // Emit event with the old and new rates (note: s_interestRate is updated after emitting the event here, which might be something to consider).
         emit InterestRateSet(s_interestRate, newInterestRate);
@@ -93,10 +94,6 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
      * @param amount The number of tokens to burn. If the amount is the maximum uint256 value, burn the entire balance.
      */
     function burn(address from, uint256 amount) external onlyRole(MINT_AND_BURN_ROLE) {
-        // If amount equals max uint256, it means "burn all tokens" for that user.
-        if (amount == type(uint256).max) {
-            amount = balanceOf(from);
-        }
         // Mint any accrued interest before burning.
         _mintAccruedInterest(from);
         // Burn the tokens.
@@ -143,6 +140,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
         if (balanceOf(recipient) == 0) {
             s_userInterestRate[recipient] = s_userInterestRate[msg.sender];
         }
+
         // Execute the standard ERC20 transfer.
         return super.transfer(recipient, amount);
     }
@@ -164,10 +162,11 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
             amount = balanceOf(sender);
         }
 
-        // If recipient's balance becomes equal to sender's balance after transfer, inherit interest rate.
-        if (amount == balanceOf(recipient)) {
+        // If the recipient had no balance before, inherit the sender's interest rate.
+        if (balanceOf(recipient) == 0) {
             s_userInterestRate[recipient] = s_userInterestRate[sender];
         }
+
         // Execute the standard ERC20 transferFrom.
         return super.transferFrom(sender, recipient, amount);
     }

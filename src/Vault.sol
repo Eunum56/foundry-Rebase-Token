@@ -31,23 +31,18 @@ contract Vault {
     // Create a redeem function that burns the tokens from the user and send the user ETH
     // Create a way to add rewards to the vault
 
-
     // ERRORS
     error Vault__RedeemFailed();
     error Vault__AmountShouldBeMoreThanZero();
 
-
     // STATE VARIABLES
     IRebaseToken private immutable i_rebaseToken;
-
 
     // EVENTS
     event Deposit(address indexed user, uint256 amount);
     event Redeem(address indexed user, uint256 amount);
 
-
     // MODIFIERS
-
 
     // FUNCTIONS
     constructor(IRebaseToken rebaseToken) {
@@ -58,7 +53,6 @@ contract Vault {
 
     // EXTERNAL FUNCTIONS
 
-
     /**
      * @notice Allows users to deposit ETH into the vault and mint themselfs RebaseTokens
      */
@@ -68,35 +62,30 @@ contract Vault {
         emit Deposit(msg.sender, msg.value);
     }
 
-
     /**
      * @notice Allows user to redeem their Rebase Tokens for ETH
      * @param amount The amount of Rebase Tokens to redeem
      */
     function redeem(uint256 amount) external {
+        // If amount equals max uint256, it means "burn all tokens" for that user.
+        if (amount == type(uint256).max) {
+            amount = i_rebaseToken.balanceOf(msg.sender);
+        }
         require(amount > 0, Vault__AmountShouldBeMoreThanZero());
         // 1 We need to burn the msg.sender(user) tokens
         i_rebaseToken.burn(msg.sender, amount);
 
         // 2 We need to send the user ETH
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        (bool success,) = payable(msg.sender).call{value: amount}("");
         require(success, Vault__RedeemFailed());
         emit Redeem(msg.sender, amount);
     }
 
-
-
     // PUBLIC FUNCTIONS
-
-
 
     // INTERNAL FUNCTIONS
 
-
-
     // PRIVATE FUNCTIONS
-
-
 
     // GETTERS
 
@@ -104,7 +93,7 @@ contract Vault {
      * @notice Get the address of Rebase Token
      * @return The address of Rebase Token
      */
-    function getRebaseTokenAddress() external view returns(address){
+    function getRebaseTokenAddress() external view returns (address) {
         return address(i_rebaseToken);
     }
 }
